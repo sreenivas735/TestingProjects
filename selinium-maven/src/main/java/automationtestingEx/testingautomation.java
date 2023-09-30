@@ -40,28 +40,83 @@ public class testingautomation {
         Thread.sleep(2000);
         WebElement text = driver.findElement(By.xpath("//input[@title='From']"));
         text.sendKeys("nellore");
-        givenvillageisnotthere village = new givenvillageisnotthere(driver);
-        village.fromAndtoselectvillage("Gangadhara Nellore");
+
+        Makemytrip mt = new Makemytrip(driver);
+
+        mt.fromAndtoselectvillage("Nellore");
 
         wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("//input[@placeholder ='To']")));
         driver.findElement(By.xpath("//input[@placeholder ='To']")).sendKeys("beng");
-        village.fromAndtoselectvillage("Bangalore (Bengaluru)");
+        mt.fromAndtoselectvillage("Bangalore (Bengaluru)");
 //        village.caldateselect("2024","November", "5");
+
+        mt.caldateselect("2023", "November", "25");
+
+        driver.findElement(By.id("search_button")).click();
+
+    }
+}
+
+class Makemytrip extends Exception {
+    WebDriver driver;
+
+    Makemytrip(WebDriver driver) {
+        this.driver = driver;
+    }
+
+    public void fromAndtoselectvillage(String selectvillage) throws givenvillageisnotthere, InterruptedException {
+
+        Thread.sleep(3000);
+        List<WebElement> listofelements = driver.findElements(By.xpath("//ul[@role='listbox']//li"));
+        int count = 0;
+        for (WebElement value : listofelements) {
+
+            String starting1 = value.getText();
+
+            if (starting1.contains(selectvillage)) {
+                count++;
+                value.click();
+
+                break;
+            }
+
+        }
+        if (!(count == 0)) {
+            System.out.println("given village is selected");
+        } else {
+            throw new givenvillageisnotthere("given village is not there, please check it once");
+        }
+    }
+
+    public int monthTonumberconvert(String monthName) throws ParseException {
+        // Replace with your desired month name
+
+        // Create a SimpleDateFormat object to parse month names
+        SimpleDateFormat dateFormat = new SimpleDateFormat("MMMM");
+        // Parse the month name into a Date object
+        Date date = dateFormat.parse(monthName);
+
+        // Convert the Date object into a month number (1-12)
+        int monthNumber = date.getMonth() + 1; // Adding 1 because month numbers are 0-based
+        return monthNumber;
+    }
+
+    public void caldateselect(String givenyear, String givenmonth, String givendate) throws ParseException, givenyearandmonthanddate {
 
         WebElement date = driver.findElement(By.xpath("(//div[@class='DayPicker-Caption'])[1]"));
         String monthyear = date.getText();
 
-        String givenmonth = "November";
-        String givenyear = "2023";
-        int givendate = 24;
+//        String givenmonth = "November";
+//        String givenyear = "2023";
+//        String givendate = "24";
         String month = monthyear.split(" ")[0];
         String year = monthyear.split(" ")[1];
 
-        int monthnum = village.monthTonumberconvert(month);
-        int monthgivennum = village.monthTonumberconvert(givenmonth);
+        int monthnum = monthTonumberconvert(month);
+        int monthgivennum = monthTonumberconvert(givenmonth);
 
         if (!(Integer.parseInt(givenyear) == Integer.parseInt(year))) {
-            throw new givenyearandmonthanddate("given "+givenyear+" or "+givenmonth+" or "+givendate+" one of the value is not there in the calender");
+            throw new givenyearandmonthanddate("given " + givenyear + " or " + givenmonth + " or " + givendate + " one of the value is not there in the calender");
 
         } else if (Integer.parseInt(givenyear) > Integer.parseInt(year)) {
 
@@ -98,99 +153,21 @@ public class testingautomation {
             datepick.click();
         }
 
-
-    }
-}
-
-class givenvillageisnotthere extends Exception {
-    WebDriver driver;
-
-    givenvillageisnotthere(String s) {
-        super(s);
-
-    }
-
-    givenvillageisnotthere(WebDriver driver) {
-        this.driver = driver;
-    }
-
-    public void fromAndtoselectvillage(String selectvillage) throws givenvillageisnotthere, InterruptedException {
-
-        Thread.sleep(3000);
-        List<WebElement> listofelements = driver.findElements(By.xpath("//ul[@role='listbox']//li"));
-        int count = 0;
-        for (WebElement value : listofelements) {
-
-            String starting1 = value.getText();
-            System.out.println(starting1);
-
-            if (starting1.contains(selectvillage)) {
-                count++;
-                value.click();
-
-                break;
-            }
-
-        }
-        if (!(count == 0)) {
-            System.out.println("given village is selected");
-        } else {
-            throw new givenvillageisnotthere("given village is not there, please check it once");
-        }
-    }
-
-    public int monthTonumberconvert(String monthName) throws ParseException {
-        // Replace with your desired month name
-
-        // Create a SimpleDateFormat object to parse month names
-        SimpleDateFormat dateFormat = new SimpleDateFormat("MMMM");
-        // Parse the month name into a Date object
-        Date date = dateFormat.parse(monthName);
-
-        // Convert the Date object into a month number (1-12)
-        int monthNumber = date.getMonth() + 1; // Adding 1 because month numbers are 0-based
-        return monthNumber;
-    }
-
-    public void caldateselect(String givenyear, String givenmonth, String givendate) throws ParseException {
-
-        WebElement date = driver.findElement(By.xpath("(//div[@class='DayPicker-Caption'])[1]"));
-        String monthyear = date.getText();
-
-        String month = monthyear.split(" ")[0];
-
-
-        int monthnum = monthTonumberconvert(month);
-        int monthgivennum = monthTonumberconvert(givenmonth);
-
-        if (monthnum < monthgivennum) {
-
-            while (!(month.equals(givenmonth))) {
-                WebElement navigaetonext = driver.findElement(By.xpath("//span[@aria-label='Next Month']"));
-                navigaetonext.click();
-
-                date = driver.findElement(By.xpath("(//div[@class='DayPicker-Caption'])[1]"));
-                monthyear = date.getText();
-                month = monthyear.split(" ")[0];
-
-            }
-            WebElement datepick = driver.findElement(By.xpath("(//div[@class='DayPicker-Day'  and contains(text(), '" + givendate + "')])[1]"));
-            datepick.click();
-        } else if (monthnum == monthgivennum) {
-
-            WebElement datepick = driver.findElement(By.xpath("(//div[@class='DayPicker-Day'  and contains(text(), '" + givendate + "')])[1]"));
-            datepick.click();
-        }
-
     }
 
 }
 
-class givenyearandmonthanddate extends Throwable {
-    givenyearandmonthanddate(String str){
+class givenyearandmonthanddate extends Exception {
+    givenyearandmonthanddate(String str) {
         super(str);
     }
 
 }
 
+class givenvillageisnotthere extends Exception {
+    givenvillageisnotthere(String s) {
+        super(s);
 
+    }
+
+}
